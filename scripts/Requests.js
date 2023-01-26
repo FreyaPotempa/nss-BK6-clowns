@@ -14,8 +14,6 @@ mainContainer.addEventListener(
 
 export const Requests = () => {
     const pastRequests = getRequests()
-    const partyOvers = getCompletions()
-    const clowns = getClowns()
     // fetch request must go inside this function in order to work bc timey-wimey
     const sortedPastRequests = pastRequests.sort((a, b) => {
         let da = new Date(a.partyDate);
@@ -25,7 +23,7 @@ export const Requests = () => {
     
     let html = `<section class="partyList"><h3 id="marginProbs">Party Schedule</h3>`
     const requestList = sortedPastRequests.map(request =>
-        matchCompletedParty(request, partyOvers, clowns))
+        matchCompletedParty(request))
         
     html += requestList.join("")
     html += "</section>"
@@ -50,25 +48,26 @@ const convertRequestToListElement = (request) => {
 }
 */
 
+const isEventFinished = (request) => {
+    const partyOvers = getCompletions()
+    const clowns = getClowns()
+if (partyOvers.find(party => parseInt(party.requestId) === request.id)) {
+    return `Completed!`
+} else {
+    return `<select class="clowns" id="clowns">
+    <option value="">Choose</option>
+    ${clowns.map(clown => { 
+        return `<option value="${request.id}--${clown.id}">${clown.name}</option>`
+    }).join("")}
+    </select>`
+}
+}
 
-
-const matchCompletedParty = (request, partyOvers, clowns) => {
-    let html = ""
-    if (partyOvers.find( party => parseInt(party.requestId) === request.id )) {
-            html += `<p class="complete">${request.parentName}'s child, ${request.childName}, had a party completed.
-            <button class="request--delete" id="request--${request.id}">Delete</button></p>`
-        } else {
-            html += `<p>${request.parentName}'s child, ${request.childName}, has a party on ${request.partyDate}
-            <select class="clowns" id="clowns">
-            <option value="">Choose</option>
-            ${clowns.map(clown => { 
-                return `<option value="${request.id}--${clown.id}">${clown.name}</option>`
-            }).join("")}
-            </select>
+const matchCompletedParty = (request) => {
+   return `<p>${request.parentName}'s child, ${request.childName}, has a party on ${request.partyDate}.
+            ${isEventFinished(request)}
             <button class="request--delete" id="request--${request.id}">Delete</button></p>`
         }
-    return html
-}
 
 mainContainer.addEventListener(
     "change",
